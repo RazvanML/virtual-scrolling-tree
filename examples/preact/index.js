@@ -64,28 +64,21 @@ class ReactVirtualScrollingTree extends React.Component {
     }
 
     componentDidMount () {
-        let { 
-            itemHeight, 
-            onDataFetch, 
-            onItemRender,
-            totalRootItems 
-        } = this.props;
+        let { onItemRender } = this.props;
 
         let render = (parent, item) => {
             return React.render(onItemRender(item), parent);
         }
 
         this.instance = new VirtualScrollingTree({
+            ...this.props,
             parent: this.base,
-            totalRootItems: totalRootItems,
-            itemHeight: itemHeight,
             onItemRender: render,
-            onDataFetch: onDataFetch
         });
     }
 
     render () {
-        return (<div style="height: 400px"/>);
+        return (<div style="height: 300px"/>);
     }
 }
 
@@ -109,6 +102,18 @@ class App extends React.Component {
             line-height: 32px;
         `;
 
+        function onItemRender (item) {
+            return (
+                <div class="Item" style={ItemStyles} onClick={item.toggle}>
+                    <span style={`padding-left: ${item.indent * 30}px`}>
+                        {
+                            (item.data.children? (item.expanded? '-' : '+') : '') + ' ' + item.data.label
+                        }
+                    </span>
+                </div>
+            );
+        }
+
         return (
             <div>
                 <h1>Simple Example</h1>
@@ -116,17 +121,15 @@ class App extends React.Component {
                     totalRootItems={totalRootItems}
                     itemHeight={32}
                     onDataFetch={onDataFetch}
-                    onItemRender={item => {
-                        return (
-                            <div class="Item" style={ItemStyles} onClick={item.toggle}>
-                                <span style={`padding-left: ${item.indent * 30}px`}>
-                                    {
-                                        (item.data.children? (item.expanded? '-' : '+') : '') + ' ' + item.data.label
-                                    }
-                                </span>
-                            </div>
-                        );
-                    }}
+                    onItemRender={onItemRender}
+                />
+                <h1>Smooth Scrolling Example</h1>
+                <ReactVirtualScrollingTree
+                    totalRootItems={totalRootItems}
+                    itemHeight={32}
+                    onDataFetch={onDataFetch}
+                    onItemRender={onItemRender}
+                    smoothScrolling={true}
                 />
             </div>
         );

@@ -4,10 +4,10 @@
 let style = document.createElement('style');
 style.textContent = `
     .VirtualScrollingTree {
-        height: 100%;
+        overflow-y: hidden;
     }
 
-    .VirtualScrollingTree > div {
+    .VirtualScrollingTree-content {
         display: inline-block;
         vertical-align: top;
         height: 100%;
@@ -15,11 +15,16 @@ style.textContent = `
 
     .VirtualScrollingTree-scrollbar {
         overflow-y: auto;
+        display: inline-block;
+        vertical-align: top;
+        height: 100%;
     }
 
     .VirtualScrollingTree-scrollbarContent {
         width: 1px;
         visibility: hidden;
+        display: inline-block;
+        vertical-align: top;
     }
 `;
 document.head.appendChild(style);
@@ -62,6 +67,7 @@ export default class VirtualScrollingTree {
         _(this).onDataFetch = options.onDataFetch;
         _(this).parent = options.parent;
         _(this).scrollbarClass = options.scrollbarClass || '';
+        _(this).smoothScrolling = options.smoothScrolling || false;
 
         this.redraw = this.redraw.bind(this);
 
@@ -89,9 +95,13 @@ export default class VirtualScrollingTree {
 function prepareView() {
     _(this).el = document.createElement('div');
     _(this).el.setAttribute('class', 'VirtualScrollingTree');
+
+    let contentDiv = `<div class="VirtualScrollingTree-content"></div>`;
+
     _(this).el.innerHTML = `
-        <div class="VirtualScrollingTree-content"></div>
+        ${_(this).smoothScrolling? '' : contentDiv}
         <div class="VirtualScrollingTree-scrollbar ${_(this).scrollbarClass}">
+            ${_(this).smoothScrolling? contentDiv : ''}
             <div class="VirtualScrollingTree-scrollbarContent"></div>
         </div>
     `.replace(/\n\s+/g, '');
@@ -105,10 +115,18 @@ function prepareView() {
     // Scrolling either the content with the middle mouse wheel, or manually
     // scrolling the scrollbar directly should accomplish the same thing.
     _(this).view.scrollbar.addEventListener('scroll', requestData.bind(this), true);
-    _(this).view.content.addEventListener('wheel', e => {
-        _(this).view.scrollbar.scrollTop += e.deltaY;
-    }, true);
 
+    if (!_(this).smoothScrolling) {
+        _(this).view.content.addEventListener('wheel', e => {
+            _(this).view.scrollbar.scrollTop += e.deltaY;
+        }, true);
+    } else {
+        _(this).view.scrollbar.addEventListener('scroll', () => {
+            let offset = parseInt(_(this).view.scrollbar.scrollTop / _(this).itemHeight) * _(this).itemHeight;
+            _(this).view.content.style.transform = `translateY(${offset}px)`;
+        }, true);
+    }
+    
     _(this).parent.appendChild(_(this).el);
 }    
 
@@ -119,16 +137,17 @@ function prepareView() {
  * @private
  */
 function updateViewDimensions(totalItems) {
-    let visibleItems = Math.floor(_(this).el.offsetHeight / _(this).itemHeight);
+    let visibleItems = Math.floor(_(this).parent.offsetHeight / _(this).itemHeight);
     _(this).view.content.style.height = visibleItems * _(this).itemHeight + 'px';
     _(this).view.scrollbar.style.height = visibleItems * _(this).itemHeight + 'px';
-
+    _(this).view.scrollbarContent.style.height = totalItems * _(this).itemHeight + 'px';
+    
     let scrollbarWidth = totalItems < visibleItems? 0 : getNativeScrollbarWidth.call(this);
     _(this).view.content.style.width = _(this).el.offsetWidth - scrollbarWidth - 1 + 'px';
-    _(this).view.scrollbar.style.width = scrollbarWidth + 1 + 'px';
-    _(this).view.scrollbarContent.style.height = totalItems * _(this).itemHeight + 'px';
 
-    
+    if (!_(this).smoothScrolling) {
+        _(this).view.scrollbar.style.width = scrollbarWidth + 1 + 'px';
+    }
 }
 
 /**
@@ -161,8 +180,8 @@ function getNativeScrollbarWidth() {
  * @private
  */
 function requestData() {
-    let visible = Math.floor(_(this).el.offsetHeight / _(this).itemHeight);
-    let scrollIndex = Math.ceil(_(this).view.scrollbar.scrollTop / _(this).itemHeight);
+    let visible = Math.ceil(_(this).parent.offsetHeight / _(this).itemHeight);
+    let scrollIndex = Math.floor(_(this).view.scrollbar.scrollTop / _(this).itemHeight);
     let request = buildRequest.call(this, scrollIndex, visible);
     _(this).request = request;
     _(this).onDataFetch(request, setData.bind(this));

@@ -39,6 +39,8 @@ http://localhost:8585/examples/preact/index.html
 * ***[Number]* itemHeight:** Pixel size of each item in the tree. Must always be the same.
 * ***[Function]* onItemRender:** Called for each item. Passes the target element and metadata about the item it's rendering.
 * ***[Function]* onDataFetch:** Called when there's a need for data.
+* ***[String]* scrollbarClass:** Optional scrollbar CSS class if you have a custom scrollbar.
+* ***[Boolean]* smoothScrolling:** Optional, if enabled, smoothly scrolls to look more native instead of shifting rows. Might not be suitable when using asynchronous onDataFetch.
 
 ## onItemRender
 
