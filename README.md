@@ -46,10 +46,14 @@ http://localhost:8585/examples/preact/index.html
 
 The following properties are passed into the onItemRender callback:
 
-* ***[Object]* data:** Contains the object that was given by onDataFetch.
+* ***[String]* id:** The id of the item. This will be used to reference the item by the component.
+* ***[Number]* children:** The amount of children this item has. When an item is toggled it will use this number to determine how many to fetch.
+* ***[String|Null]* parent:** Contains the id of the parent. If it's the root, the value will be null.
 * ***[Boolean]* expanded:** If true, the item is in an expanded state.
 * ***[Number]* indent:** Represents how indented this item should be.
 * ***[Function]* toggle:** Call this function to expand/collapse the item.
+
+Custom properties will also be passed in.
 
 ```
 onItemRender: (element, item) => {
@@ -105,9 +109,10 @@ Query responses must be given in the form of an array, and must match the same o
 Items must have the following properties:
 
 * ***[String]* id:** The id of the item. This will be used to reference the item by the component.
-* ***[String]* label:** Public display for the label.
 * ***[Number]* children:** The amount of children this item has. When an item is toggled it will use this number to determine how many to fetch.
 
+Items can have additional properties which you can use for your own rendering purposes.
+Please be advised that you should keep your custom properties namespaced to avoid future compatibility issues.
 
 ## Methods 
 

@@ -5,6 +5,7 @@ let style = document.createElement('style');
 style.textContent = `
     .VirtualScrollingTree {
         overflow-y: hidden;
+        white-space: nowrap;
     }
 
     .VirtualScrollingTree-content {
@@ -114,7 +115,14 @@ function prepareView() {
 
     // Scrolling either the content with the middle mouse wheel, or manually
     // scrolling the scrollbar directly should accomplish the same thing.
-    _(this).view.scrollbar.addEventListener('scroll', requestData.bind(this), true);
+    let lastScrollTop = 0;
+    _(this).view.scrollbar.addEventListener('scroll', (e) => {
+        let newScrollTop = _(this).view.scrollbar.scrollTop;
+        if (lastScrollTop !== newScrollTop) {
+            lastScrollTop = newScrollTop;
+            requestData.call(this);
+        }
+    }, true);
 
     if (!_(this).smoothScrolling) {
         _(this).view.content.addEventListener('wheel', e => {
@@ -138,7 +146,7 @@ function prepareView() {
  */
 function updateViewDimensions(totalItems) {
     let visibleItems = Math.floor(_(this).parent.offsetHeight / _(this).itemHeight);
-    _(this).view.content.style.height = visibleItems * _(this).itemHeight + 'px';
+
     _(this).view.scrollbar.style.height = visibleItems * _(this).itemHeight + 'px';
     _(this).view.scrollbarContent.style.height = totalItems * _(this).itemHeight + 'px';
     
@@ -147,6 +155,8 @@ function updateViewDimensions(totalItems) {
 
     if (!_(this).smoothScrolling) {
         _(this).view.scrollbar.style.width = scrollbarWidth + 1 + 'px';
+        // Not needed for smooth
+        _(this).view.content.style.height = visibleItems * _(this).itemHeight + 'px';
     }
 }
 
@@ -268,7 +278,7 @@ function setData(data) {
         itemEl.setAttribute('class', 'VirtualScrollingTree-item');
 
         _(this).onItemRender(itemEl, {
-            data: data.original,
+            ...data.original,
             expanded: isExpanded.call(this, data.id),
             indent: calculateLevel.call(this, data),
             toggle: () => {
@@ -288,6 +298,7 @@ function setData(data) {
         _(this).view.content.appendChild(itemEl);
         _(this).items.push(itemEl);
     });
+    
 }
 
 /**

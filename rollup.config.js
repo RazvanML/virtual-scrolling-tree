@@ -4,7 +4,9 @@ let buble = require('rollup-plugin-buble');
 module.exports = {
     input: `src/virtual-scrolling-tree/VirtualScrollingTree.js`,
     plugins: [
-        buble()
+        buble({
+            objectAssign: 'Object.assign'
+        })
     ],
     output: [
         { file: pkg.main, format: 'cjs' },

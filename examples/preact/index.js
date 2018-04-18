@@ -107,7 +107,7 @@ class App extends React.Component {
                 <div class="Item" style={ItemStyles} onClick={item.toggle}>
                     <span style={`padding-left: ${item.indent * 30}px`}>
                         {
-                            (item.data.children? (item.expanded? '-' : '+') : '') + ' ' + item.data.label
+                            (item.children? (item.expanded? '-' : '+') : '') + ' ' + item.label
                         }
                     </span>
                 </div>

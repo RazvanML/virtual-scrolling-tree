@@ -12,3 +12,6 @@ package.demo.json
 *.tgz
 *.tar.gz
 .travis.yml
+examples/
+rollup.config.js
+server.js
