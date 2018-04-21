@@ -27,6 +27,7 @@ then
         mkdir -p $CLONE_DIR &&
         cd $CLONE_DIR &&
         git clone git@github.com:PepsRyuu/$GITHUB_IO.git
+        git config user.email "paul-sweeney@outlook.ie"
     )
         
     rm -rf $GITHUB_IO_DEMO
