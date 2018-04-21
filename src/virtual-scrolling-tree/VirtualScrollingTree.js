@@ -69,6 +69,7 @@ export default class VirtualScrollingTree {
         _(this).parent = options.parent;
         _(this).scrollbarClass = options.scrollbarClass || '';
         _(this).smoothScrolling = options.smoothScrolling || false;
+        _(this).diffMode = options.diffMode || 'hard';
 
         this.redraw = this.redraw.bind(this);
 
@@ -83,6 +84,7 @@ export default class VirtualScrollingTree {
 
     destroy () {
         window.removeEventListener('resize', this.redraw);
+        _(this).el.remove();
     }
 }
 
@@ -113,17 +115,6 @@ function prepareView() {
         scrollbarContent: _(this).el.querySelector('.VirtualScrollingTree-scrollbarContent')
     };
 
-    // Scrolling either the content with the middle mouse wheel, or manually
-    // scrolling the scrollbar directly should accomplish the same thing.
-    let lastScrollTop = 0;
-    _(this).view.scrollbar.addEventListener('scroll', (e) => {
-        let newScrollTop = _(this).view.scrollbar.scrollTop;
-        if (lastScrollTop !== newScrollTop) {
-            lastScrollTop = newScrollTop;
-            requestData.call(this);
-        }
-    }, true);
-
     if (!_(this).smoothScrolling) {
         _(this).view.content.addEventListener('wheel', e => {
             _(this).view.scrollbar.scrollTop += e.deltaY;
@@ -135,6 +126,19 @@ function prepareView() {
         }, true);
     }
     
+    // Scrolling either the content with the middle mouse wheel, or manually
+    // scrolling the scrollbar directly should accomplish the same thing.
+    // Note it's important for this to come after the transform above.
+    // If it's not, when the DOM is being manipulated the scrollbar will jump.
+    let lastScrollTop = 0;
+    _(this).view.scrollbar.addEventListener('scroll', (e) => {
+        let newScrollTop = _(this).view.scrollbar.scrollTop;
+        if (lastScrollTop !== newScrollTop) {
+            lastScrollTop = newScrollTop;
+            requestData.call(this);
+        }
+    }, true);
+
     _(this).parent.appendChild(_(this).el);
 }    
 
@@ -210,13 +214,7 @@ function setData(data) {
 
     // Clone so that we have our own reference
     data = JSON.parse(JSON.stringify(data));
-
-    // Wipe out all of the current items since we don't need them anymore.
-    // Easier code wise to just re-instantiate everything and doesn't impact performance.
-    while (_(this).items.length) {
-        _(this).items.pop().remove();
-    }
-
+    
     // Calculate the total height that the scrollbar should be based on the root nodes
     // and all of the items that have been expanded so far.
     let totalHeight = 0;
@@ -272,33 +270,107 @@ function setData(data) {
         }
     });
 
-    // Once we've figured out the output, start rendering them
-    output.forEach((data) => {
-        let itemEl = document.createElement('div');
-        itemEl.setAttribute('class', 'VirtualScrollingTree-item');
 
-        _(this).onItemRender(itemEl, {
-            ...data.original,
-            expanded: isExpanded.call(this, data.id),
-            indent: calculateLevel.call(this, data),
-            toggle: () => {
-                // Check to see if this item is expanded or not
-                let expanded = isExpanded.call(this, data.id);
-                if (expanded) {
-                    collapseItem.call(this, data);
-                } else {
-                    expandItem.call(this, data);
+    if (_(this).items.length === 0 || _(this).diffMode === 'hard') {
+        // Wipe out all of the current items since we don't need them anymore.
+        // Easier code wise to just re-instantiate everything and doesn't impact performance.
+        while (_(this).items.length) {
+            _(this).items.pop().el.remove();
+        }
+
+
+        // Once we've figured out the output, start rendering them
+        output.forEach((data) => {
+            let item = createItem.call(this, data);
+            _(this).view.content.appendChild(item.el);
+            _(this).items.push(item);
+        });
+    } else if (_(this).diffMode === 'soft') {
+        // First check what's common, and run updates.
+        // We'll also discover what isn't common and therefore track them for removal.
+        let removals = [];
+        let updated = [];
+        _(this).items.forEach((item, index) => {
+            let found = false;
+            for (let i = 0; i < output.length; i++) {
+                if (output[i].id === item.id) {
+                    renderItem.call(this, item.el, output[i], true);
+                    updated.push(i);
+                    found = true;
+                    break;
                 }
+            } 
 
-                // Each time we expand or collapse we need to re-request data.
-                requestData.call(this);
+            if (!found) {
+                removals.push(index);
             }
         });
 
-        _(this).view.content.appendChild(itemEl);
-        _(this).items.push(itemEl);
-    });
-    
+        // Remove the items.
+        for (let i = removals.length - 1; i >= 0; i--) {
+            let index = removals[i];
+            _(this).items[index].el.remove();
+            _(this).items.splice(index, 1);
+        }
+
+        // Insert all of the new items.
+        for (let i = 0; i < output.length; i++) {
+            if (updated.indexOf(i) === -1) {
+                let item = createItem.call(this, output[i]);
+                 _(this).view.content.insertBefore(item.el, _(this).view.content.children[i]);
+                 _(this).items.splice(i, 0, item);
+            }
+        }
+    }
+}
+
+/**
+ * Calls the onItemRender option.
+ *
+ * @method renderItem
+ * @private
+ * @param {HTMLElement} element
+ * @param {Object} data
+ * @param {Boolean} updating
+ */
+function renderItem (element, data, updating) {
+    _(this).onItemRender(element, {
+        ...data.original,
+        expanded: isExpanded.call(this, data.id),
+        indent: calculateLevel.call(this, data),
+        toggle: () => {
+            // Check to see if this item is expanded or not
+            let expanded = isExpanded.call(this, data.id);
+            if (expanded) {
+                collapseItem.call(this, data);
+            } else {
+                expandItem.call(this, data);
+            }
+
+            // Each time we expand or collapse we need to re-request data.
+            requestData.call(this);
+        }
+    }, updating);
+}
+
+/**
+ * Creates a HTMLElement to render an item into.
+ *
+ * @method createItem
+ * @private
+ * @param {Object} data
+ * @return {Object}
+ */
+function createItem (data) {
+    let itemEl = document.createElement('div');
+    itemEl.setAttribute('class', 'VirtualScrollingTree-item');
+
+    renderItem.call(this, itemEl, data);
+
+    return {
+        id: data.id,
+        el: itemEl
+    };
 }
 
 /**

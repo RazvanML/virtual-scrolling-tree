@@ -64,14 +64,26 @@ class ReactVirtualScrollingTree extends React.Component {
     }
 
     componentDidMount () {
-        let { onItemRender } = this.props;
+        this.createInstance(this.props);
+    }
 
-        let render = (parent, item) => {
-            return React.render(onItemRender(item), parent);
+    componentWillReceiveProps (nextProps) {
+        this.createInstance(nextProps);
+    }
+
+    createInstance (props) {
+        if (this.instance) {
+            this.instance.destroy();
+        }
+
+        let { onItemRender } = props;
+
+        let render = (parent, item, updating) => {
+            return React.render(onItemRender(item), parent, updating? parent.firstChild : undefined);
         }
 
         this.instance = new VirtualScrollingTree({
-            ...this.props,
+            ...props,
             parent: this.base,
             onItemRender: render,
         });
@@ -90,6 +102,14 @@ class ReactVirtualScrollingTree extends React.Component {
 class App extends React.Component {
     constructor () {
         super();
+
+        this.state = {
+            demo: 0
+        }
+    }
+
+    showDemo (index) {
+        this.setState({ demo: index });
     }
 
     render () {
@@ -100,6 +120,7 @@ class App extends React.Component {
             font-size: 16px;
             vertical-align: middle;
             line-height: 32px;
+            cursor: pointer;
         `;
 
         function onItemRender (item) {
@@ -114,23 +135,72 @@ class App extends React.Component {
             );
         }
 
+        let demos = [{
+            title: 'Simple',
+            body: (
+                <div>
+                    <p>Simple tree where rows shift as you scroll.</p>
+                    <ReactVirtualScrollingTree
+                        totalRootItems={totalRootItems}
+                        itemHeight={32}
+                        onDataFetch={onDataFetch}
+                        onItemRender={onItemRender}
+                    />
+                </div>
+            )
+        }, {
+            title: 'Smooth Scrolling', 
+            body: (
+                <div>
+                    <p>Smooth scrolling instead of row shifting.</p>
+                    <ReactVirtualScrollingTree
+                        totalRootItems={totalRootItems}
+                        itemHeight={32}
+                        onDataFetch={onDataFetch}
+                        onItemRender={onItemRender}
+                        smoothScrolling={true}
+                    />
+                </div>
+            )
+        }, {
+            title: 'Soft Updates',
+            body: (
+                <div>
+                    <p>
+                        Instead of destroying all rows and re-creating them,
+                        this will check for elements that are updating. This
+                        works best when using a virtual DOM library to 
+                        manage the updating. See developer tools.
+                    </p>
+                    <ReactVirtualScrollingTree
+                        totalRootItems={totalRootItems}
+                        itemHeight={32}
+                        onDataFetch={onDataFetch}
+                        onItemRender={onItemRender}
+                        smoothScrolling={true}
+                        diffMode="soft"
+                    />
+                </div>
+            )
+        }];
+
         return (
             <div>
-                <h1>Simple Example</h1>
-                <ReactVirtualScrollingTree
-                    totalRootItems={totalRootItems}
-                    itemHeight={32}
-                    onDataFetch={onDataFetch}
-                    onItemRender={onItemRender}
-                />
-                <h1>Smooth Scrolling Example</h1>
-                <ReactVirtualScrollingTree
-                    totalRootItems={totalRootItems}
-                    itemHeight={32}
-                    onDataFetch={onDataFetch}
-                    onItemRender={onItemRender}
-                    smoothScrolling={true}
-                />
+                {demos.map((demo, index) => (
+                    <div 
+                        style={`
+                            display: inline-block;
+                            margin: 0 20px 20px 0;
+                            padding: 4px 10px;
+                            cursor: pointer;
+                            ${index === this.state.demo? 'border-bottom: 1px solid black' : ''}
+                        `}
+                        onClick={() => this.showDemo(index)}
+                    >
+                        {demo.title}
+                    </div>
+                ))}
+                {demos[this.state.demo].body}
             </div>
         );
     }

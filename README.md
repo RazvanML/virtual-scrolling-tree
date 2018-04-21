@@ -1,8 +1,8 @@
 # Virtual Scrolling Tree
 
-Virtual scrolling tables are an easy problem to solve. If you know how many rows there are in a table, you can easily map the scrollbar position to a row index and slice the data of the table to show that index. For trees however, it's a significantly more complicated problem. With trees, you have items that can expand and change the total scroll height, and the parent for an item that isn't necessarily visible or in the DOM as you're scrolling. 
+Virtual scrolling tables are an easy problem to solve. If you know how many rows there are in a table, you can easily map the scrollbar position to a row index and slice the data of the table to show that index. For trees however, it's a significantly more complicated problem. With trees, you have items that can expand and change the total scroll height, and the parent for an item that isn't necessarily visible or in the DOM as you're scrolling. There's also asynchronous situations where you might want to connect to a server and download a partial amount of the data, which may or may not include parents.
 
-This project demonstrates how to implement a tree which adopts the virtual scrolling technique.
+This project provides a vanilla JavaScript implementation of a virtual scrolling tree. It's also designed to be easily wrapped by third-party frameworks (see examples folder), so no matter which project you're working on, you should always be able to use this library to power virtual scrolling trees.
 
 ## Getting Started
 
@@ -41,6 +41,7 @@ http://localhost:8585/examples/preact/index.html
 * ***[Function]* onDataFetch:** Called when there's a need for data.
 * ***[String]* scrollbarClass:** Optional scrollbar CSS class if you have a custom scrollbar.
 * ***[Boolean]* smoothScrolling:** Optional, if enabled, smoothly scrolls to look more native instead of shifting rows. Might not be suitable when using asynchronous onDataFetch.
+* ***[String]* diffMode:** Optional, by default is set to "hard" which wipes all rows and re-renders them. If set to "soft" where it will check which elements are updating. Those elements are not removed, but you must update them yourself.
 
 ## onItemRender
 
@@ -56,7 +57,7 @@ The following properties are passed into the onItemRender callback:
 Custom properties will also be passed in.
 
 ```
-onItemRender: (element, item) => {
+onItemRender: (element, item, updating) => {
     element.innerHTML = `
         <div class="Item">
             <div style="padding-left: ${item.indent * 20}px" />
@@ -68,6 +69,8 @@ onItemRender: (element, item) => {
     element.children[0].addEventListener('click', item.toggle);
 }
 ```
+
+"updating" is passed as true if you're using "soft" as the "diffMode".
 
 ## onDataFetch
 
