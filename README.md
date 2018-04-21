@@ -4,6 +4,10 @@ Virtual scrolling tables are an easy problem to solve. If you know how many rows
 
 This project provides a vanilla JavaScript implementation of a virtual scrolling tree. It's also designed to be easily wrapped by third-party frameworks (see examples folder), so no matter which project you're working on, you should always be able to use this library to power virtual scrolling trees.
 
+## Demo
+
+[Live Demo](http://pepsryuu.github.io/demo/vst/)
+
 ## Getting Started
 
 Install the package. The package provides many different formats depending on your tool setup.
@@ -123,6 +127,3 @@ Please be advised that you should keep your custom properties namespaced to avoi
 
 **destroy:** Clean up the component.
 
-## Demo
-
-[Old Live Demo](http://pepsryuu.github.io/demo/vst/)
