@@ -155,7 +155,7 @@ function updateViewDimensions(totalItems) {
     _(this).view.scrollbarContent.style.height = totalItems * _(this).itemHeight + 'px';
     
     let scrollbarWidth = totalItems < visibleItems? 0 : getNativeScrollbarWidth.call(this);
-    _(this).view.content.style.width = _(this).el.offsetWidth - scrollbarWidth - 1 + 'px';
+    _(this).view.content.style.width = Math.floor(_(this).el.getBoundingClientRect().width) - scrollbarWidth - 1 + 'px';
 
     if (!_(this).smoothScrolling) {
         _(this).view.scrollbar.style.width = scrollbarWidth + 1 + 'px';
@@ -181,7 +181,7 @@ function getNativeScrollbarWidth() {
     document.body.appendChild(outer);
     let content = document.createElement('div');
     outer.appendChild(content);
-    let width = 100 - content.offsetWidth;
+    var width = 100 - Math.floor(content.getBoundingClientRect().width);
     document.body.removeChild(outer);
     return width;
 }
