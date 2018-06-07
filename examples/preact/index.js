@@ -135,6 +135,54 @@ class App extends React.Component {
             );
         }
 
+        function onItemRenderComplex (item) {
+            let ItemStyles = `
+                height: 32px;
+                box-sizing: border-box;
+                font-size: 16px;
+                vertical-align: middle;
+                line-height: 32px;
+                cursor: pointer;
+            `;
+
+            let ColumnStyle = `
+                padding: 0 10px;
+                box-sizing: border-box;
+                min-width: 300px;
+                max-width: 300px;
+            `;
+
+            return (
+                <div class="Item" style={ItemStyles} onClick={item.toggle}>
+                    <div style={`display: flex; padding-left: ${item.indent * 30}px;`}>
+                        <div>
+                            {
+                                (item.children? (item.expanded? '-' : '+') : '')
+                            }
+                        </div>
+                        <div style={ColumnStyle}>
+                            {item.label}
+                        </div>
+                        <div style={ColumnStyle}>
+                            {item.label}
+                        </div>
+                        <div style={ColumnStyle}>
+                            {item.label}
+                        </div>
+                        <div style={ColumnStyle}>
+                            {item.label}
+                        </div>
+                        <div style={ColumnStyle}>
+                            {item.label}
+                        </div>
+                        <div style={ColumnStyle}>
+                            {item.label}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
         let demos = [{
             title: 'Simple',
             body: (
@@ -177,6 +225,23 @@ class App extends React.Component {
                         itemHeight={32}
                         onDataFetch={onDataFetch}
                         onItemRender={onItemRender}
+                        smoothScrolling={true}
+                        diffMode="soft"
+                    />
+                </div>
+            )
+        }, {
+            title: 'Soft Update Horizontal',
+            body: (
+                <div>
+                    <p>
+                        Horizontal scrolling example with soft updates and smooth scrolling enabled.
+                    </p>
+                    <ReactVirtualScrollingTree
+                        totalRootItems={totalRootItems}
+                        itemHeight={32}
+                        onDataFetch={onDataFetch}
+                        onItemRender={onItemRenderComplex}
                         smoothScrolling={true}
                         diffMode="soft"
                     />

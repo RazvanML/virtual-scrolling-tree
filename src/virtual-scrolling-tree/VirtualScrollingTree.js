@@ -11,7 +11,6 @@ style.textContent = `
     .VirtualScrollingTree-content {
         display: inline-block;
         vertical-align: top;
-        height: 100%;
     }
 
     .VirtualScrollingTree-scrollbar {
@@ -155,12 +154,15 @@ function updateViewDimensions(totalItems) {
     _(this).view.scrollbarContent.style.height = totalItems * _(this).itemHeight + 'px';
     
     let scrollbarWidth = totalItems < visibleItems? 0 : getNativeScrollbarWidth.call(this);
-    _(this).view.content.style.width = Math.floor(_(this).el.getBoundingClientRect().width) - scrollbarWidth - 1 + 'px';
-
+    
     if (!_(this).smoothScrolling) {
+        _(this).view.content.style.width = Math.floor(_(this).el.getBoundingClientRect().width) - scrollbarWidth - 1 + 'px';
         _(this).view.scrollbar.style.width = scrollbarWidth + 1 + 'px';
         // Not needed for smooth
         _(this).view.content.style.height = visibleItems * _(this).itemHeight + 'px';
+    } else {
+        _(this).view.scrollbar.style.width = '100%';
+        _(this).view.content.style.width = 'calc(100% - 1px)';
     }
 }
 
