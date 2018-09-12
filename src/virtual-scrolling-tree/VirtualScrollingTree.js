@@ -81,6 +81,28 @@ export default class VirtualScrollingTree {
         requestData.call(this);
     }
 
+    expand (item) {
+        if (!isExpanded.call(this, item.parent)) {
+            throw new Error('Parent ' + item.parent + ' must be expanded to expand ' + item.id);
+        }
+
+        if (!isExpanded.call(this, item.id)) {
+            expandItem.call(this, item);
+            requestData.call(this);
+        }
+    }
+    
+    collapse (item) {
+        if (!isExpanded.call(this, item.parent)) {
+            throw new Error('Parent ' + item.parent + ' must be expanded to collapse ' + item.id);
+        }
+
+        if (isExpanded.call(this, item.id)) {
+            collapseItem.call(this, item);
+            requestData.call(this);
+        }
+    }
+
     destroy () {
         window.removeEventListener('resize', this.redraw);
         _(this).el.remove();
@@ -428,13 +450,12 @@ function calculateLevel(item) {
 }
 
 /**
- * If expanded, index in expansions array is returned.
- * If not expanded, -1 is returned.
+ * If expanded, returns true.
  *
  * @method isExpanded
  * @private
  * @param {String} id
- * @return {Number} index
+ * @return {Boolean} inside
  */
 function isExpanded(id) {
     return findExpansion.call(this, id) !== undefined;

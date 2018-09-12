@@ -29,6 +29,22 @@ generateItemsForParent({
     children: totalRootItems
 }, 0);
 
+// Helper function for demo to dynamically expand items
+function findItemInDataForExpansion (label) {
+    for (let i = 0; i < data.length; i++) {
+        if (data[i].label === label) {
+            let item = data[i];
+            let offset = data.filter(d => d.parent === item.parent).findIndex(d => d.id === item.id);
+
+            return {
+                parent: item.parent,
+                id: item.id,
+                children: item.children,
+                offset: offset
+            };
+        }
+    }
+}
 
 /**
  * Called by the VST to get data.
@@ -113,6 +129,7 @@ class App extends React.Component {
     }
 
     render () {
+
         let ItemStyles = `
             height: 32px;
             border-bottom: 1px solid black;
@@ -242,6 +259,37 @@ class App extends React.Component {
                         itemHeight={32}
                         onDataFetch={onDataFetch}
                         onItemRender={onItemRenderComplex}
+                        smoothScrolling={true}
+                        diffMode="soft"
+                    />
+                </div>
+            )
+        }, {
+            title: 'Dynamic Expansions',
+            body: (
+                <div>
+                    <p>
+                        Ability to dynamically expand items. In order to do so, you need
+                        to know the parent id, the current item id, the number of children
+                        the item has, and it's offset in the parent's children list.
+                    </p>
+                    <ReactVirtualScrollingTree
+                        ref={component => {
+                            // Just using ref to do a post-render
+                            component.instance.expand(findItemInDataForExpansion('Item .1'));
+                            component.instance.expand(findItemInDataForExpansion('Item .1.2'));
+                            component.instance.expand(findItemInDataForExpansion('Item .1.4'));
+                            component.instance.expand(findItemInDataForExpansion('Item .1.4.0'));
+                            component.instance.expand(findItemInDataForExpansion('Item .1.4.1'));
+                            component.instance.expand(findItemInDataForExpansion('Item .1.4.2'));
+                            component.instance.expand(findItemInDataForExpansion('Item .1.4.3'));
+                            component.instance.expand(findItemInDataForExpansion('Item .1.4.4'));
+                            component.instance.collapse(findItemInDataForExpansion('Item .1.4.3'));
+                        }}
+                        totalRootItems={totalRootItems}
+                        itemHeight={32}
+                        onDataFetch={onDataFetch}
+                        onItemRender={onItemRender}
                         smoothScrolling={true}
                         diffMode="soft"
                     />

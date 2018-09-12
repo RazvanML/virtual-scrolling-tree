@@ -123,7 +123,10 @@ Please be advised that you should keep your custom properties namespaced to avoi
 
 ## Methods 
 
-**redraw:** Redraw the component. If layout is changing without the resizing of the window, you'll need to call this function.
+**redraw():** Redraw the component. If layout is changing without the resizing of the window, you'll need to call this function.
 
-**destroy:** Clean up the component.
+**destroy():** Clean up the component.
 
+**expand(Object):** Expands the specified item. Must pass parent id, id of item, children for item, and offset of the item relative to the parent.
+
+**collapse(Object):** Collapses the specified item. Must pass parent id, id of item, children for item, and offset of the item relative to the parent. 
