@@ -103,6 +103,58 @@ export default class VirtualScrollingTree {
         }
     }
 
+    scrollIntoView (item, options = { align: 'start' }) {
+        if (!isExpanded.call(this, item.parent)) {
+            throw new Error('Parent ' + item.parent + ' must be expanded to scroll ' + item.id + ' into the view');
+        }
+
+        let parent = findExpansion.call(this, item.parent);
+
+        // This can get a bit complicated depending on the scenario.
+        // If there's no item expanded with the same parent but a lower
+        // offset, then the algorithm is simply _start + offset.
+        // However, if there is an item expanded, we need to get the _end
+        // value of that item, and add the difference in offset.
+        //
+        // 0 Item 0 <-- 
+        // 1 Item 1 <-- _start 2, _end 6
+        // 2    Item 1.0 <-- offset 0
+        // 3    Item 1.1 <-- start 4, end 5, offset 1
+        // 4       Item 1.1.0
+        // 5       Item 1.1.1
+        // 6    Item 1.2 <-- Here we want to go
+        //
+        // In this example, if Item 1.1 was not expanded, to get
+        // to Item 1.2, it would be:
+        // 
+        // (Item 1)._start + (Item 1.2).offset
+        // = 2 + 2 = 4
+        // 
+        // On the other hand, if Item 1.1 was expanded:
+        //
+        // (Item 1.1)._end + (Item 1.2).offset - (Item 1.1).offset
+        // = 5 + 2 - 1 = 6
+        // 
+        // So it works out according to the absolute index.
+        let above = parent.expansions.filter(e => {
+            return e.offset < item.offset;
+        }).pop();
+
+        let scrollTop;
+        if (above) {
+            scrollTop = above._end + item.offset - above.offset;
+        } else {
+            scrollTop = parent._start + item.offset;
+        }
+
+        if (options.align === 'end') {
+            // Subtract the total number of visible items minus one.
+            scrollTop -= Math.floor(_(this).parent.offsetHeight / _(this).itemHeight) - 1;
+        }
+
+        _(this).view.scrollbar.scrollTop = scrollTop * _(this).itemHeight;
+    }
+
     destroy () {
         window.removeEventListener('resize', this.redraw);
         _(this).el.remove();
@@ -140,22 +192,26 @@ function prepareView() {
         _(this).view.content.addEventListener('wheel', e => {
             _(this).view.scrollbar.scrollTop += e.deltaY;
         }, true);
-    } else {
-        _(this).view.scrollbar.addEventListener('scroll', () => {
-            let offset = parseInt(_(this).view.scrollbar.scrollTop / _(this).itemHeight) * _(this).itemHeight;
-            _(this).view.content.style.transform = `translateY(${offset}px)`;
-        }, true);
-    }
-    
+    } 
+
     // Scrolling either the content with the middle mouse wheel, or manually
     // scrolling the scrollbar directly should accomplish the same thing.
     // Note it's important for this to come after the transform above.
     // If it's not, when the DOM is being manipulated the scrollbar will jump.
     let lastScrollTop = 0;
     _(this).view.scrollbar.addEventListener('scroll', (e) => {
-        let newScrollTop = _(this).view.scrollbar.scrollTop;
+        if (_(this).scrollLocked) {
+            return;
+        }
+
+        let newScrollTop = parseInt(_(this).view.scrollbar.scrollTop / _(this).itemHeight);
+
         if (lastScrollTop !== newScrollTop) {
             lastScrollTop = newScrollTop;
+            if (_(this).smoothScrolling) {
+                _(this).view.content.style.transform = `translateY(${newScrollTop * _(this).itemHeight}px)`;
+            }
+
             requestData.call(this);
         }
     }, true);
@@ -330,6 +386,13 @@ function setData(data) {
             }
         });
 
+        // Lock the scroll events and track scroll position.
+        // When we're adding and removing items, they can adjust
+        // the scroll position. So after we made the updates we
+        // need to restore the scroll position.
+        let oldScrollTop = _(this).view.scrollbar.scrollTop;
+        _(this).scrollLocked = true;
+
         // Remove the items.
         for (let i = removals.length - 1; i >= 0; i--) {
             let index = removals[i];
@@ -345,6 +408,11 @@ function setData(data) {
                  _(this).items.splice(i, 0, item);
             }
         }
+
+        // TODO: This can cause a weird slow scrolling bug in Chrome when scrolling up.
+        // Was triggered by console.log, could be a latency issue.
+        _(this).view.scrollbar.scrollTop = oldScrollTop;
+        _(this).scrollLocked = false;
     }
 }
 

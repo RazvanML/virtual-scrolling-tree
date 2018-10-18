@@ -285,6 +285,7 @@ class App extends React.Component {
                             component.instance.expand(findItemInDataForExpansion('Item .1.4.3'));
                             component.instance.expand(findItemInDataForExpansion('Item .1.4.4'));
                             component.instance.collapse(findItemInDataForExpansion('Item .1.4.3'));
+                            component.instance.scrollIntoView(findItemInDataForExpansion('Item .1.4.1.1'), { align: 'end'})
                         }}
                         totalRootItems={totalRootItems}
                         itemHeight={32}
