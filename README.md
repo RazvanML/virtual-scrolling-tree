@@ -38,25 +38,30 @@ http://localhost:8585/examples/preact/index.html
 
 ## Constructor Options
 
-* ***[HTMLElement]* parent:** The element to instantiate this component into.
-* ***[Number]* totalRootItems:** The starting number of items must be known.
-* ***[Number]* itemHeight:** Pixel size of each item in the tree. Must always be the same.
-* ***[Function]* onItemRender:** Called for each item. Passes the target element and metadata about the item it's rendering.
-* ***[Function]* onDataFetch:** Called when there's a need for data.
-* ***[String]* scrollbarClass:** Optional scrollbar CSS class if you have a custom scrollbar.
-* ***[Boolean]* smoothScrolling:** Optional, if enabled, smoothly scrolls to look more native instead of shifting rows. Might not be suitable when using asynchronous onDataFetch.
-* ***[String]* diffMode:** Optional, by default is set to "hard" which wipes all rows and re-renders them. If set to "soft" where it will check which elements are updating. Those elements are not removed, but you must update them yourself.
+| Type          | Name             | Description |
+|---------------|---------------   |-------------|
+| `HTMLElement` | `parent`         | The element to instantiate this component into. |
+| `Number`      | `totalRootItems` | The starting number of items must be known. |
+| `Number`      | `itemHeight`     | Pixel size of each item in the tree. Must always be the same.|
+| `Function`    | `onItemRender`   | Called for each item. Passes the target element and metadata about the item it's rendering. |
+| `Function`    | `onDataFetch`    | Called when there's a need for data. |
+| `String`      | `scrollbarClass` | Optional scrollbar CSS class if you have a custom scrollbar. |
+| `Boolean`     | `smoothScrolling`| Optional, if enabled, smoothly scrolls to look more native instead of shifting rows. Might not be suitable when using asynchronous onDataFetch. |
+| `String`      | `diffMode`       | Optional, by default is set to `hard` which wipes all rows and re-renders them. If set to `soft` where it will check which elements are updating. Those elements are not removed, but you must update them yourself.|
+
 
 ## onItemRender
 
 The following properties are passed into the onItemRender callback:
 
-* ***[String]* id:** The id of the item. This will be used to reference the item by the component.
-* ***[Number]* children:** The amount of children this item has. When an item is toggled it will use this number to determine how many to fetch.
-* ***[String|Null]* parent:** Contains the id of the parent. If it's the root, the value will be null.
-* ***[Boolean]* expanded:** If true, the item is in an expanded state.
-* ***[Number]* indent:** Represents how indented this item should be.
-* ***[Function]* toggle:** Call this function to expand/collapse the item.
+| Type       | Name       | Description |
+|------------|------------|-------------|
+| `String`   | `id`       | The id of the item. This will be used to reference the item by the component. |
+| `Number`   | `children` | The amount of children this item has. When an item is toggled it will use this number to determine how many to fetch. |
+| `String`   | `parent`   | Contains the id of the parent. If it's the root, the value will be `null`. |
+| `Boolean`  | `expanded` | If true, the item is in an expanded state. |
+| `Number`   | `indent`   | Represents how indented this item should be. |
+| `Function` | `toggle`   | Call this function to expand/collapse the item. |
 
 Custom properties will also be passed in.
 
@@ -94,9 +99,11 @@ onDataFetch: (query, resolve) {
 
 Query objects contain the following:
 
-* ***[String|Null]* parent:** Contains the id of the parent. If it's the root, the value will be null.
-* ***[Number]* offset:** When fetching the children for this parent, start from this offset rather than the beginning.
-* ***[Number]* limit:** Fetch this amount of children from the offset.
+| Type     | Name     | Description |
+|----------|----------|-------------|
+| `String` | `parent` | Contains the id of the parent. If it's the root, the value will be `null`. |
+| `Number` | `offset` | When fetching the children for this parent, start from this offset rather than the beginning. |
+| `Number` | `limit`  | Fetch this amount of children from the offset. |
 
 ```
 {
@@ -110,23 +117,38 @@ Query objects contain the following:
 
 Query responses must be given in the form of an array, and must match the same order as the query objects. The following are the expected properties for query responses:
 
-* ***[String|Null]* parent:** The parent id, if it's the root, the parent is null.
-* ***[Array]* items:** Array of items.
+| Type            | Name     | Description |
+|-----------------|----------|-------------|
+| `String`        | `parent` | The parent id, if it's the root, the parent is `null`. |
+| `Array<Object>` | `items`  |  Array of items. |
 
 Items must have the following properties:
 
-* ***[String]* id:** The id of the item. This will be used to reference the item by the component.
-* ***[Number]* children:** The amount of children this item has. When an item is toggled it will use this number to determine how many to fetch.
+| Type     | Name       | Description |
+|----------|------------|-------------|
+| `String` | `id`       | The id of the item. This will be used to reference the item by the component. |
+| `Number` | `children` | The amount of children this item has. When an item is toggled it will use this number to determine how many to fetch. |
 
 Items can have additional properties which you can use for your own rendering purposes.
 Please be advised that you should keep your custom properties namespaced to avoid future compatibility issues.
 
 ## Methods 
 
-**redraw():** Redraw the component. If layout is changing without the resizing of the window, you'll need to call this function.
+| Method           | Parameters   | Description |
+|------------------|--------------|-------------|
+| `redraw`         |              | Redraw the component. If layout is changing without the resizing of the window, you'll need to call this function. |
+| `destroy`        |              | Clean up the component. |
+| `expand`         | `item:Item` | Expands the specified item. See below for Item description. |
+| `collapse`       | `item:Item` | Collapses the specified item. See below for Item description. |
+| `scrollIntoView` | `item:Item`, `[options:Object]` | Scrolls to the specified item. See below for Item description. Options accepts `align` which can either be `"start"` or `"end"`, which will align the item to the top or bottom of the viewport. |
 
-**destroy():** Clean up the component.
+### Item Object
 
-**expand(Object):** Expands the specified item. Must pass parent id, id of item, children for item, and offset of the item relative to the parent.
+| Type     | Name       | Description |
+|----------|------------|-------------|
+| `String` | `parent`   | The parent id of this item. |
+| `String` | `id`       | The id of this item. |
+| `Number` | `offset`   | Relative to the parent, starting from 0, the index of this item. |
+| `Number` | `children` | The number of children this item has. |
 
-**collapse(Object):** Collapses the specified item. Must pass parent id, id of item, children for item, and offset of the item relative to the parent. 
+Used by the methods above. If any of these properties are incorrect, it will result in incorrect rendering.
