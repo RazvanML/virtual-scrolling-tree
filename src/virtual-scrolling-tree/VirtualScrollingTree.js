@@ -105,7 +105,7 @@ export default class VirtualScrollingTree {
     }
 
     isItemExpanded (item) {
-        return isExpanded.call(this, item.parent);
+        return isExpanded.call(this, item.id);
     }
 
     expand (item) {
