@@ -13,13 +13,13 @@ This project provides a vanilla JavaScript implementation of a virtual scrolling
 Install the package. The package provides many different formats depending on your tool setup.
 
 ```
-npm install virtual-scrolling-tree
+npm install virtual-scrolling-tree-es
 ```
 
 Assuming you're using ES6, you can then import the package.
 
 ```
-import VirtualScrollingTree from 'virtual-scrolling-tree';
+import VirtualScrollingTree from 'virtual-scrolling-tree-es';
 ```
 
 ## Running Examples
