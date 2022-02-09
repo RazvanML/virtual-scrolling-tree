@@ -75,6 +75,8 @@ export default class VirtualScrollingTree {
         this.collapse = this.collapse.bind(this);
         this.updateData = this.updateData.bind(this);
         this.isItemExpanded = this.isItemExpanded.bind(this);
+        this.expandToLevel = this.expandToLevel.bind(this);
+        
 
         window.addEventListener('resize', this.redraw);
         prepareView.call(this);
@@ -134,6 +136,13 @@ export default class VirtualScrollingTree {
         }
     }
 
+    expandToLevel (level) {
+        expandRecursive.call(this,null, level);
+        requestData.call(this);
+    };
+    
+    
+
     scrollIntoView (item, options = { align: 'start' }) {
         if (!isExpanded.call(this, item.parent)) {
             throw new Error('Parent ' + item.parent + ' must be expanded to scroll ' + item.id + ' into the view');
@@ -191,6 +200,27 @@ export default class VirtualScrollingTree {
         _(this).el.remove();
     }
 }
+
+
+/**
+ * Expand an item for the number of levels.
+ *
+ * @method expandRecursive
+ * @private
+ * @param {Object} item
+ * @param {Integer} levels
+ */
+function expandRecursive(item, levels) {
+    if (!isExpanded.call(this,item)) {
+        expandItem.call(this, item);
+    }
+    levels --;
+    if (levels == 0) return;
+    _(this).onDataFetch([{parent:item,offset:0,limit:NaN}], x => {
+        x[0].items.forEach(y=>(expandRecursive.call(this,y,levels)));
+    }  );    
+}
+
 
 /**
  * Creates a shortcut view object which we can use to access

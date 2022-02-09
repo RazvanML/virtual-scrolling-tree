@@ -26,6 +26,18 @@ import VirtualScrollingTree from 'virtual-scrolling-tree-es';
 
 Examples are stored in the ```examples``` folder. To run them run:
 
+Install rollup:
+```
+npm install -g rollup
+```
+
+Install rollup-plugin-bubble:
+```
+npm install  rollup-plugin-buble
+```
+
+Won't run on Windows, it relies on cp command. Executed in cygwin or other UNIX environment.
+
 ```
 npm start
 ```
@@ -35,6 +47,14 @@ And then visit the following:
 ```
 http://localhost:8585/examples/preact/index.html
 ```
+
+For pure JavaScript control, follow:
+
+```
+http://localhost:8585/examples/index.html
+```
+
+
 
 ## Constructor Options
 
