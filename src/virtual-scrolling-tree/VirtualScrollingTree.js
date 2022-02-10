@@ -223,8 +223,6 @@ function expandRecursive(item, levels) {
         if (x.length != 1 || x[0].parent != parent )
            throw new Error("Invalid response from onData fetch");
         x[0].items.forEach(y=>{
-            y.offset = offset++;
-            y.parent = parent;
             expandRecursive.call(this,y,levels);
         });
     }  );    
@@ -353,28 +351,6 @@ function requestData() {
 
 
 
-/**
- *  Apply the offsets to the items which is used to keep track of expansions.
- *  By ensuring the data has the offset applied to them, we can calculate from
- *  here exactly which items are above us and which ones are below us when we 
- *
- * @method applyOffsetAndParent
- * @private
- * @param {Array<Object>} response
- * @param {Array<Object>} query
- */
-function applyOffsetAndParent(response, query) {
-    if (response.length != query.length)
-        throw new Error("Response and query must be of the same size");
-    for (let i = 0; i < response.length; i++) {
-        if (response[i].parent != query[i].parent)
-            throw new Error("Response and query have parents at the same position index");
-        for (let j = 0; j < response[i].items.length; j++) {
-            response[i].items[j].offset = query[i].offset + j;
-            response[i].items[j].parent = query[i].parent;
-        }
-    }
-}
 
 /**
  * Figures out where to draw all of the items based on expanded, scroll position
@@ -395,8 +371,6 @@ function setData(data) {
     });
 
     updateViewDimensions.call(this, totalHeight);
-
-    applyOffsetAndParent(data, _(this).request );
 
     // The response from the server should be in a heirarchical structure.
     // This means that we can iterate over this array, and the further we are in the array

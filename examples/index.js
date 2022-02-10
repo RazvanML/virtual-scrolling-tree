@@ -8,15 +8,17 @@
          let obj = {
              id: data.length,
              label: parentObj.label + "." + i,
-             parentID: parentObj.id,
-             children: (level !== 3? 5 : 0)*2,
+             parent: parentObj.id,
+             children: (level !== 4? 5 : 0)*2,
+			 offset: i*2
          };
          data.push(obj);
          let obj2 = {
              id: data.length,
              label: parentObj.label + "." + i + " no child",
-             parentID: parentObj.id,
+             parent: parentObj.id,
              children: 0,
+			 offset: i*2+1
          };
          data.push(obj2);
          if (obj.children) {
@@ -50,7 +52,7 @@ function onDataFetch(queries, resolve) {
 
     queries.forEach(function(query) {
         let filteredItems = data.filter(function(obj) {
-            return obj.parentID === query.parent;
+            return obj.parent === query.parent;
         });
 
         output.push({
@@ -80,7 +82,7 @@ let control = new VirtualScrollingTree(
 	onItemRender:onItemRender,
     smoothScrolling: true,
     totalRootItems:  data.filter(function(obj) {
-        return obj.parentID === null;
+        return obj.parent === null;
     }).length
 } );
 
@@ -91,7 +93,7 @@ function expandtest() {
 	id = findItemInDataForExpansion("Item .4.0.3.0").id;
 	while(id !== null) {
 		ids.push(id);
-		id = data[id].parentID;
+		id = data[id].parent;
 	}
 	ids = ids.reverse();
 	ids.forEach( x=> control.expand(data[x]) );
