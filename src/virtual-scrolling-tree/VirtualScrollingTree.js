@@ -216,10 +216,13 @@ function expandRecursive(item, levels) {
     }
     levels --;
     if (levels == 0) return;
-    _(this).onDataFetch([{parent:item===null?null:item.id,offset:0,limit:NaN}], x => {
+    var query = [{parent:item===null?null:item.id,offset:0,limit:NaN}];
+    _(this).onDataFetch(query, x => {
+        applyOffsetAndParent(x,query);
         x[0].items.forEach(y=>(expandRecursive.call(this,y,levels)));
     }  );    
 }
+
 
 
 /**
@@ -342,6 +345,31 @@ function requestData() {
     _(this).onDataFetch(request, setData.bind(this));
 }
 
+
+
+/**
+ *  Apply the offsets to the items which is used to keep track of expansions.
+ *  By ensuring the data has the offset applied to them, we can calculate from
+ *  here exactly which items are above us and which ones are below us when we 
+ *
+ * @method applyOffsetAndParent
+ * @private
+ * @param {Array<Object>} response
+ * @param {Array<Object>} query
+ */
+function applyOffsetAndParent(response, query) {
+    if (response.length != query.length)
+        throw new Error("Response and query must be of the same size");
+    for (let i = 0; i < response.length; i++) {
+        if (response[i].parent != query[i].parent)
+            throw new Error("Response and query have parents at the same position index");
+        for (let j = 0; j < response[i].items.length; j++) {
+            response[i].items[j].offset = query[i].offset + j;
+            response[i].items[j].parent = query[i].parent;
+        }
+    }
+}
+
 /**
  * Figures out where to draw all of the items based on expanded, scroll position
  * and other pieces of information.
@@ -352,10 +380,7 @@ function requestData() {
  */
 function setData(data) {
     let output = [];
-
-    // Clone so that we have our own reference
-    data = JSON.parse(JSON.stringify(data));
-    
+  
     // Calculate the total height that the scrollbar should be based on the root nodes
     // and all of the items that have been expanded so far.
     let totalHeight = 0;
@@ -365,18 +390,7 @@ function setData(data) {
 
     updateViewDimensions.call(this, totalHeight);
 
-    // Apply the offsets to the items which is used to keep track of expansions.
-    // By ensuring the data has the offset applied to them, we can calculate from
-    // here exactly which items are above us and which ones are below us when we 
-    // look at the position of the virtual scrollbar.
-    for (let i = 0; i < data.length; i++) {
-        for (let j = 0; j < data[i].items.length; j++) {
-            let item = data[i].items[j];
-            item.original = JSON.parse(JSON.stringify(item));
-            item.offset = _(this).request[i].offset + j;
-            item.parent = data[i].parent;
-        }
-    }
+    applyOffsetAndParent(data, _(this).request );
 
     // The response from the server should be in a heirarchical structure.
     // This means that we can iterate over this array, and the further we are in the array
@@ -488,7 +502,7 @@ function setData(data) {
  */
 function renderItem (element, data, updating) {
     _(this).onItemRender(element, {
-        ...data.original,
+        ...data,
         expanded: isExpanded.call(this, data.id),
         indent: calculateLevel.call(this, data),
         toggle: () => {
@@ -504,6 +518,7 @@ function renderItem (element, data, updating) {
             requestData.call(this);
         }
     }, updating);
+    element.style.height = "" + _(this).itemHeight + "px";
 }
 
 /**
@@ -615,8 +630,6 @@ function collapseItem(data) {
  * @params {Object} data
  */
 function expandItem(data) {
-    // Cloning to avoid modification of the original data item.
-    data = JSON.parse(JSON.stringify(data));
 
     if (!data.expansions) {
         data.expansions = [];

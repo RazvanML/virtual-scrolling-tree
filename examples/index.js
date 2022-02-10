@@ -8,17 +8,15 @@
          let obj = {
              id: data.length,
              label: parentObj.label + "." + i,
-             parent: parentObj.id,
+             parentID: parentObj.id,
              children: (level !== 3? 5 : 0)*2,
-             offset: i*2
          };
          data.push(obj);
          let obj2 = {
              id: data.length,
              label: parentObj.label + "." + i + " no child",
-             parent: parentObj.id,
+             parentID: parentObj.id,
              children: 0,
-             offset: i*2+1
          };
          data.push(obj2);
          if (obj.children) {
@@ -30,7 +28,7 @@
  generateItemsForParent({
      id: null,
      label: "Item ",
-     children: 5
+     children: 10
  }, 0);
 
 // Helper function for demo to dynamically expand items
@@ -52,7 +50,7 @@ function onDataFetch(queries, resolve) {
 
     queries.forEach(function(query) {
         let filteredItems = data.filter(function(obj) {
-            return obj.parent === query.parent;
+            return obj.parentID === query.parent;
         });
 
         output.push({
@@ -62,7 +60,7 @@ function onDataFetch(queries, resolve) {
 
     });
 
-    resolve(JSON.parse(JSON.stringify(output)));
+    resolve(output);
 }
 
 function onItemRender (element, item) {
@@ -77,12 +75,12 @@ let mainelement = document.getElementById("tree");
 let control = new VirtualScrollingTree(
 {
 	parent:mainelement,
-	itemHeight:18,
+	itemHeight:32,
 	onDataFetch:onDataFetch,
 	onItemRender:onItemRender,
     smoothScrolling: true,
     totalRootItems:  data.filter(function(obj) {
-        return obj.parent === null;
+        return obj.parentID === null;
     }).length
 } );
 
@@ -93,7 +91,7 @@ function expandtest() {
 	id = findItemInDataForExpansion("Item .4.0.3.0").id;
 	while(id !== null) {
 		ids.push(id);
-		id = data[id].parent;
+		id = data[id].parentID;
 	}
 	ids = ids.reverse();
 	ids.forEach( x=> control.expand(data[x]) );
