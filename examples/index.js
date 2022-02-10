@@ -1,51 +1,43 @@
 /**
  * Create Mock Data
  */
-let data = [];
-let id = 0;
-let totalRootItems = 5;
+ let data = [];
 
-function generateItemsForParent(parentObj, level) {
-    for (let i = 0; i < parentObj.children; i++) {
-        let obj = {
-            id: id++,
-            label: parentObj.label + "." + i,
-            parent: parentObj.id,
-            children: level !== 3? 5 : 0
-        };
-        data.push(obj);
-        let obj2 = {
-            id: id++,
-            label: parentObj.label + "." + i + " no child",
-            parent: parentObj.id,
-            children: 0
-        };
-        data.push(obj2);
-        if (obj.children) {
-            generateItemsForParent(obj, level + 1);
-        }
-    }
-};
-
-generateItemsForParent({
-    id: null,
-    label: "Item ",
-    children: totalRootItems
-}, 0);
+ function generateItemsForParent(parentObj, level) {
+     for (let i = 0; i < parentObj.children/2; i++) {         
+         let obj = {
+             id: data.length,
+             label: parentObj.label + "." + i,
+             parent: parentObj.id,
+             children: (level !== 3? 5 : 0)*2,
+             offset: i*2
+         };
+         data.push(obj);
+         let obj2 = {
+             id: data.length,
+             label: parentObj.label + "." + i + " no child",
+             parent: parentObj.id,
+             children: 0,
+             offset: i*2+1
+         };
+         data.push(obj2);
+         if (obj.children) {
+             generateItemsForParent(obj, level + 1);
+         }
+     }
+ };
+ 
+ generateItemsForParent({
+     id: null,
+     label: "Item ",
+     children: 5
+ }, 0);
 
 // Helper function for demo to dynamically expand items
 function findItemInDataForExpansion (label) {
     for (let i = 0; i < data.length; i++) {
         if (data[i].label === label) {
-            let item = data[i];
-            let offset = data.filter(d => d.parent === item.parent).findIndex(d => d.id === item.id);
-
-            return {
-                parent: item.parent,
-                id: item.id,
-                children: item.children,
-                offset: offset
-            };
+            return data[i];
         }
     }
 }
@@ -94,3 +86,15 @@ let control = new VirtualScrollingTree(
     }).length
 } );
 
+
+
+function expandtest() {
+	ids = [];
+	id = findItemInDataForExpansion("Item .4.0.3.0").id;
+	while(id !== null) {
+		ids.push(id);
+		id = data[id].parent;
+	}
+	ids = ids.reverse();
+	ids.forEach( x=> control.expand(data[x]) );
+}

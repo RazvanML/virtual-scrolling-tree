@@ -138,7 +138,7 @@ export default class VirtualScrollingTree {
 
     expandToLevel (level) {
         expandRecursive.call(this,null, level);
-        requestData.call(this);
+//        requestData.call(this);
     };
     
     
@@ -212,11 +212,11 @@ export default class VirtualScrollingTree {
  */
 function expandRecursive(item, levels) {
     if (!isExpanded.call(this,item)) {
-        expandItem.call(this, item);
+        this.expand(item);
     }
     levels --;
     if (levels == 0) return;
-    _(this).onDataFetch([{parent:item,offset:0,limit:NaN}], x => {
+    _(this).onDataFetch([{parent:item===null?null:item.id,offset:0,limit:NaN}], x => {
         x[0].items.forEach(y=>(expandRecursive.call(this,y,levels)));
     }  );    
 }
