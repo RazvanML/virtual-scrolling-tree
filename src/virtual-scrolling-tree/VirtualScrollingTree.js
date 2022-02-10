@@ -138,7 +138,7 @@ export default class VirtualScrollingTree {
 
     expandToLevel (level) {
         expandRecursive.call(this,null, level);
-//        requestData.call(this);
+        requestData.call(this);
     };
     
     
@@ -210,19 +210,25 @@ export default class VirtualScrollingTree {
  * @param {Object} item
  * @param {Integer} levels
  */
+
 function expandRecursive(item, levels) {
     if (!isExpanded.call(this,item)) {
-        this.expand(item);
+        expandItem.call(this, item);
     }
     levels --;
     if (levels == 0) return;
-    var query = [{parent:item===null?null:item.id,offset:0,limit:NaN}];
-    _(this).onDataFetch(query, x => {
-        applyOffsetAndParent(x,query);
-        x[0].items.forEach(y=>(expandRecursive.call(this,y,levels)));
+    let offset = 0;
+    let parent = (item !== null ? item.id : null);
+    _(this).onDataFetch([{parent:parent,offset:0,limit:NaN}], x => {
+        if (x.length != 1 || x[0].parent != parent )
+           throw new Error("Invalid response from onData fetch");
+        x[0].items.forEach(y=>{
+            y.offset = offset++;
+            y.parent = parent;
+            expandRecursive.call(this,y,levels);
+        });
     }  );    
 }
-
 
 
 /**
