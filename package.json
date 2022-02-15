@@ -1,19 +1,31 @@
 {
-    "name": "virtual-scrolling-tree-es",
-    "version": "0.5.3",
-    "description": "Virtual Scrolling Tree with update support",
-    "author": "Paul Sweeney",
-    "license": "MIT",
-    "main": "dist/VirtualScrollingTree.cjs.js",
-    "module": "dist/VirtualScrollingTree.esm.js",
-    "browser": "dist/VirtualScrollingTree.umd.js",
-    "scripts": {
-        "build": "rollup -c && cp src/**/*.css dist/",
-        "start": "npm run build && node server.js"
-    },
-    "devDependencies": {
-        "express": "4.13.4",
-        "rollup": "^0.56.4",
-        "rollup-plugin-buble": "^0.19.8"
-    }
+  "name": "virtual-scrolling-tree-expert-ai",
+  "version": "0.5.5",
+  "description": "Virtual Scrolling Tree with update support",
+  "author": "Paul Sweeney, Mike Funduc, Razvan Popovici",
+  "license": "MIT",
+  "main": "dist/VirtualScrollingTree.cjs.js",
+  "module": "dist/VirtualScrollingTree.esm.js",
+  "browser": "dist/VirtualScrollingTree.umd.js",
+  "scripts": {
+    "build": "rollup -c && cp src/**/*.css dist/",
+    "start": "npm run build && node server.js"
+  },
+  "devDependencies": {
+    "express": "4.13.4",
+    "rollup": "^0.56.4",
+    "rollup-plugin-buble": "^0.19.8"
+  },
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RazvanML/virtual-scrolling-tree.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RazvanML/virtual-scrolling-tree/issues"
+  },
+  "homepage": "https://github.com/RazvanML/virtual-scrolling-tree#readme"
 }

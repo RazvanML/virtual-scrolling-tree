@@ -212,15 +212,15 @@ export default class VirtualScrollingTree {
  */
 
 function expandRecursive(item, levels) {
-    if (!isExpanded.call(this,item)) {
+    let id = (item !== null ? item.id : null);
+    if (!isExpanded.call(this,id)) {
         expandItem.call(this, item);
     }
     levels --;
     if (levels == 0) return;
     let offset = 0;
-    let parent = (item !== null ? item.id : null);
-    _(this).onDataFetch([{parent:parent,offset:0,limit:NaN}], x => {
-        if (x.length != 1 || x[0].parent != parent )
+    _(this).onDataFetch([{parent:id,offset:0,limit:NaN}], x => {
+        if (x.length != 1 || x[0].parent != id )
            throw new Error("Invalid response from onData fetch");
         x[0].items.forEach(y=>{
             expandRecursive.call(this,y,levels);
